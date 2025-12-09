@@ -1,0 +1,178 @@
+Retrieval-Augmented Generation (RAG) is an AI framework that combines information retrieval with text generation,
+where a model first retrieves relevant external knowledge from a database or document store and then uses that retrieved
+information to generate accurate, context-aware responses.
+
+
+TWO MAIN PHASES
+1] indexing phase
+2] Retrieving phase
+
+
+
+✅ Indexing Phase
+1. Document Ingestion:
+Collecting and loading raw documents into the system.
+
+2. Chunking:
+Splitting large documents into smaller, meaningful text chunks.
+
+3. Embedding Generation:
+Converting each text chunk into a vector representation using an embedding model.
+
+4. Vector Storage:
+Saving the generated embeddings inside a vector database for fast similarity search.
+
+
+
+
+✅ Retrieving Phase
+1. Query Embedding:
+Converting the user’s question into a vector.
+
+2. Similarity Search:
+Comparing the query vector with stored vectors to find the closest matches.
+
+3. Ranking:
+Sorting the retrieved chunks based on relevance and similarity score.
+
+4. Context Assembly:
+Combining the top chunks into a final context to send to the generator model.
+
+
+
+
+
+
+
+
+Vector DB tools
+
+✅ 1. Pinecone:
+A fully-managed cloud vector database optimized for high-speed similarity search.
+
+✅ 2. Weaviate:
+An open-source vector database with built-in modules for search, classification, and hybrid queries.
+
+✅ 3. Milvus:
+A highly scalable open-source vector database built for large-scale embedding storage and retrieval.
+
+✅ 4. ChromaDB:
+A simple, developer-friendly open-source vector store ideal for local or small-scale RAG projects.
+
+✅ 5. FAISS (by Meta):
+A fast library for vector similarity search, mainly used locally for high-performance embedding retrieval.
+
+✅ 6. Qdrant:
+An open-source vector DB with strong filtering, high performance, and flexible deployment options.
+
+✅ 7. ElasticSearch (with vector support):
+A search engine that supports vector and keyword search together for hybrid retrieval.
+
+
+
+
+
+
+LANGCHAIN:-
+LangChain is a library that makes it easy to build AI applications using LLMs by connecting documents,
+embeddings, and language models. It simplifies tasks like retrieving relevant information and generating answers,
+so we can focus on solving problems instead of writing complex code from scratch
+
+
+LANGCHAIN HELPS IN:-
+Document / Data Handling – Load, split, and manage documents from PDFs, text, or web pages.
+Embeddings & Vector Store Integration – Convert text into embeddings and store them in vector databases like Qdrant or Pinecone.
+Chains – Connect multiple steps (retrieval → LLM generation) into a reusable pipeline.
+LLM Integration – Easily use OpenAI, HuggingFace, GPT4All, and other language models.
+Agents – Create AI agents that can decide dynamically which tool or data to use.
+Utilities – Provides prompt templates, memory management, summarization, and QA helpers.
+
+___________________________________________________________________________________________________________________________________________________________________
+
+
+
+
+
+************************************PDF RAG SYSTEM FROM SCRATCH***********************************
+
+________________________Indexing phase(data injection phase____________________________________
+
+STEP 1] LOADING
+A Document Loader is a component in LangChain that loads data from various sources (PDFs, text files, web pages, CSVs, etc.)
+into a format that can be processed, split into chunks, and converted into embeddings.
+
+
+
+STEP 2] CHUNKING (using text_splitters)
+Chunk Size: Divides text into fixed-size chunks or tokens to fit LLM input limits.
+chunk Overlap : Keeps some overlapping content between chunks to preserve context across splits.
+                    it helps for preventing the relation and context in data
+                    it helps to understand the recap from the previous chunk
+Delimiter/Structure: Uses paragraphs, sentences, or custom separators to split text logically.
+
+
+
+STEP 3] VECTOR EMBEDDINGS
+It converts text chunks into numerical vectors that capture semantic meaning, enabling machines to “understand” text.
+These vectors are stored in a vector database (like Qdrant) for fast similarity search during retrieval in RAG pipelines.
+Sentence-Transformers (all-MiniLM-L6-v2):
+It is a pre-trained Transformer-based model that converts text into dense numeric vectors (embeddings) capturing semantic meaning.
+Lightweight and fast, it’s ideal for local experimentation and learning, with 384-dimensional vectors.
+
+
+
+STEP 4] VECTOR STORAGE (Storing Embeddings in Qdrant)
+ChromaDB is a local vector database.
+It stores:
+        Your text chunks
+        Their generated embeddings (vectors)
+Together, this allows fast semantic search during RAG.
+
+
+SQLite file = stores text + metadata
+.bin files = store embeddings only for fast retrival
+
+WE CAN USE CHROMA DB
+Compared to:
+Qdrant → needs client, server, collections
+Pinecone → needs API key
+Weaviate → needs service
+Milvus → heavy setup
+Chroma = plug-and-play.
+
+ID	Text Chunk	           Embedding (vector)
+1	"AI is..."	             [0.23, -0.14, ...]
+2	"Machine learning..."	 [0.55, -0.91, ...]
+
+
+
+
+
+
+
+
+
+
+________________________Retrieving phase(output phase)____________________________________
+
+STEP 1] Take user query
+the retrieval phase runs when a user asks a question.
+in our case :- "what is names of team members of genai project?"
+
+
+STEP 2]Convert query → embedding
+Use your same embedding model to convert user query to embeddings
+
+
+STEP 3] Vector search in your Vector DB
+first connect to your existing chroma DB
+Ask Chroma/Qdrant/Pinecone to find the most similar stored document chunks:
+
+The search works by first converting your query into a vector that represents its meaning.
+Then it compares this query vector with all document vectors in the database using cosine similarity,
+ranks them by similarity, and returns the top k most relevant documents.
+
+STEP 4]Retrieve the text + metadata
+These chunks form the context. this is the data which is related or relevant to the user query
+
+STEP 5] PASS the extracted text to any LLM along with context and the user query
